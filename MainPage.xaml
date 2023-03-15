@@ -3,7 +3,9 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:Controls="clr-namespace:SAFTUtilitario.CustomControls"
              x:Class="SAFTUtilitario.MainPage"
-             Title="SAFT">
+             HeightRequest="550"
+             WidthRequest="800"
+             Title="">
 
     <ContentPage.Resources>
         <DataTemplate x:Key="AnoTemplate">
@@ -15,148 +17,157 @@
     </ContentPage.Resources>
 
     <ScrollView>
-        <VerticalStackLayout
-            Spacing="25"
-            Padding="0,25,0,25"
-            VerticalOptions="Start">
-
-            <Image
-                Source="ID_logo.png"
-                SemanticProperties.Description="Infodinâmica, Lda."
-                HeightRequest="50"
-                HorizontalOptions="Center" />
-            <Label
-                Text="Comunicação de ficheiros SAFT"
-                SemanticProperties.HeadingLevel="Level1"
-                FontSize="24"
-                HorizontalOptions="Center" />
-
+        <Grid Margin="25,20,25,20">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="400" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            
             <VerticalStackLayout
-                Spacing="20"
-                Padding="0,20,0,30">
+                Spacing="25"
+                VerticalOptions="Center"
+                HorizontalOptions="Start"
+                Grid.Column="0">
 
-                <Grid
-                    ColumnSpacing="20"
-                    Padding="0"
-                    HorizontalOptions="Center"
-                    VerticalOptions="Center"
-                    x:Name="GridEntry">
+                <Image
+                    Source="ID_logo.png"
+                    SemanticProperties.Description="Infodinâmica, Lda."
+                    HeightRequest="50"
+                    HorizontalOptions="Center" />
+                <Label
+                    Text="Comunicação de ficheiros SAFT"
+                    SemanticProperties.HeadingLevel="Level1"
+                    FontSize="24"
+                    HorizontalOptions="Center" />
 
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width ="150" />
-                        <ColumnDefinition Width ="150" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+                <VerticalStackLayout
+                    Spacing="20"
+                    Padding="0,0,0,25">
+
                     <!-- NIF e Password -->
-                    <Label 
-                        Grid.Column="0"
-                        Grid.Row="0"
-                        Text="NIF"
-                        FontSize="16"
-                        HorizontalOptions="Start"/>
-                    <Entry
-                        Grid.Column="0"
-                        Grid.Row="1"
-                        x:Name="EntryNIF"
-                        BackgroundColor="#Fcfafd"
-                        HorizontalOptions="Fill" />
+                    <Grid
+                        ColumnSpacing="20"
+                        Padding="0"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        x:Name="GridEntry">
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width ="150" />
+                            <ColumnDefinition Width ="150" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+                        
+                        <Label 
+                            Grid.Column="0"
+                            Grid.Row="0"
+                            Text="NIF"
+                            FontSize="16"
+                            HorizontalOptions="Start"/>
+                        <Entry
+                            Grid.Column="0"
+                            Grid.Row="1"
+                            x:Name="EntryNIF"
+                            BackgroundColor="#Fcfafd"
+                            HorizontalOptions="Fill" />
+
+                        <Label
+                            Grid.Column="1"
+                            Grid.Row="0"
+                            Text="Password"
+                            FontSize="14" 
+                            HorizontalOptions="Start"/>
+                        <Entry
+                            Grid.Column="1"
+                            Grid.Row="1"
+                            x:Name="EntryPassword"
+                            BackgroundColor="#Fcfafd"
+                            IsPassword="True" 
+                            HorizontalOptions="Fill"/>
+                    </Grid>
+                    <!-- Ano e Mês -->
+                    <Grid
+                        ColumnSpacing="20"
+                        Padding="0"
+                        HorizontalOptions="Center"
+                        VerticalOptions="Center"
+                        x:Name="GridAnoMes">
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width ="*" />
+                            <ColumnDefinition Width ="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <HorizontalStackLayout Grid.Column="0" Spacing="5">
+                            <Label
+                                Text="Ano:"
+                                FontSize="14"
+                                VerticalOptions="Center"
+                                HorizontalOptions="End"/>
+                            <Picker
+                                x:Name="PickerAnos"
+                                ItemsSource="{Binding AnosList}"
+                                BackgroundColor="#Fcfafd"
+                                HorizontalOptions="End"/>
+                        </HorizontalStackLayout>
+                        <HorizontalStackLayout Grid.Column="1" Spacing="5">
+                            <Label
+                                Grid.Column="1"
+                                Text="Mês:"
+                                FontSize="14"
+                                VerticalOptions="Center"
+                                HorizontalOptions="Start" />
+                            <Picker
+                                Grid.Column="1"
+                                x:Name="PickerMeses"
+                                ItemsSource="{Binding MesesList}"
+                                BackgroundColor="#Fcfafd"
+                                HorizontalOptions="End"/>
+                        </HorizontalStackLayout>
+
+                    </Grid>
+                </VerticalStackLayout>
+            
+                <VerticalStackLayout Padding="-15" Spacing="10" >
+                    <Button 
+                        x:Name="BtnEscolherSAFT"
+                        Text="Escolher ficheiro SAFT" 
+                        Clicked="OnSelectFileClicked"
+                        HorizontalOptions="Center" />
 
                     <Label
-                        Grid.Column="1"
-                        Grid.Row="0"
-                        Text="Password"
-                        FontSize="14" 
-                        HorizontalOptions="Start"/>
-                    <Entry
-                        Grid.Column="1"
-                        Grid.Row="1"
-                        x:Name="EntryPassword"
-                        BackgroundColor="#Fcfafd"
-                        IsPassword="True" 
-                        HorizontalOptions="Fill"/>
-                </Grid>
-                <!-- Ano e Mês -->
-                <Grid
-                    ColumnSpacing="20"
-                    Padding="0"
-                    HorizontalOptions="Center"
-                    VerticalOptions="Center"
-                    x:Name="GridAnoMes">
+                        x:Name="LabelNomeFicheiro"
+                        VerticalOptions="Center" 
+                        HorizontalOptions="Center" />
+                </VerticalStackLayout>
 
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width ="*" />
-                        <ColumnDefinition Width ="*" />
-                    </Grid.ColumnDefinitions>
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
+                <HorizontalStackLayout Padding="0,20,0,0" Spacing="10" HorizontalOptions="Center" VerticalOptions="Center">
+                    <Button 
+                        x:Name="BtnSubmeterSAFT"
+                        Text="Submeter"
+                        Clicked="OnSelectSubmeterClicked"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center" />
 
-                    <HorizontalStackLayout Grid.Column="0" Spacing="5">
-                        <Label
-                            Text="Ano:"
-                            FontSize="14"
-                            VerticalOptions="Center"
-                            HorizontalOptions="End"/>
-                        <Picker
-                            x:Name="PickerAnos"
-                            ItemsSource="{Binding AnosList}"
-                            BackgroundColor="#Fcfafd"
-                            HorizontalOptions="End"/>
-                    </HorizontalStackLayout>
-                    <HorizontalStackLayout Grid.Column="1" Spacing="5">
-                        <Label
-                            Grid.Column="1"
-                            Text="Mês:"
-                            FontSize="14"
-                            VerticalOptions="Center"
-                            HorizontalOptions="Start" />
-                        <Picker
-                            Grid.Column="1"
-                            x:Name="PickerMeses"
-                            ItemsSource="{Binding MesesList}"
-                            BackgroundColor="#Fcfafd"
-                            HorizontalOptions="End"/>
-                    </HorizontalStackLayout>
+                    <Button 
+                        x:Name="BtnValidarSAFT"
+                        Text="Validar"
+                        Clicked="OnSelectValidarClicked"
+                        BackgroundColor="Gray"
+                        TextColor="White"
+                        VerticalOptions="Center"
+                        HorizontalOptions="Center" />
 
-                </Grid>
+                </HorizontalStackLayout>
+
             </VerticalStackLayout>
-            
-            <VerticalStackLayout Padding="-15" Spacing="10" >
-                <Button 
-                    x:Name="BtnEscolherSAFT"
-                    Text="Escolher ficheiro SAFT" 
-                    Clicked="OnSelectFileClicked"
-                    HorizontalOptions="Center" />
-
-                <Label
-                    x:Name="LabelNomeFicheiro"
-                    VerticalOptions="Center" 
-                    HorizontalOptions="Center" />
-            </VerticalStackLayout>
-
-            <HorizontalStackLayout Padding="0,20,0,0" Spacing="10" HorizontalOptions="Center" VerticalOptions="Center">
-                <Button 
-                    x:Name="BtnSubmeterSAFT"
-                    Text="Submeter"
-                    Clicked="OnSelectSubmeterClicked"
-                    VerticalOptions="Center"
-                    HorizontalOptions="Center" />
-
-                <Button 
-                    x:Name="BtnValidarSAFT"
-                    Text="Validar"
-                    Clicked="OnSelectValidarClicked"
-                    BackgroundColor="Gray"
-                    TextColor="White"
-                    VerticalOptions="Center"
-                    HorizontalOptions="Center" />
-
-            </HorizontalStackLayout>
-
-        </VerticalStackLayout>
+        </Grid>
     </ScrollView>
 
 </ContentPage>

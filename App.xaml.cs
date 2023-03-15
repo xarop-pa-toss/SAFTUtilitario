@@ -20,16 +20,17 @@ public partial class App : Application
         //var alturaMonitor = display.Height;
         //var larguraMonitor = display.Width;
 
-        const int altura = 600;
-        const int largura = 400;
+        //const int altura = 600;
+        //const int largura = 400;
 
         // Set dimensões para a aplicação
-        janela.MinimumHeight = altura;
-        janela.MaximumHeight = altura;
+        //janela.MinimumHeight = altura;
+        //janela.MaximumHeight = altura;
+        //janela.MinimumWidth = largura;
 
         // Set tamanho da janela da app (deve ser double)
-        janela.Height = altura;
-        janela.Width = largura;
+        //janela.Height = altura;
+        //janela.Width = largura;
 
         return janela;	
     }

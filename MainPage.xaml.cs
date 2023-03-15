@@ -6,7 +6,6 @@ using System.IO;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
-using AuthenticationServices;
 
 namespace SAFTUtilitario;
 
@@ -59,13 +58,9 @@ public partial class MainPage : ContentPage
     // MAIN
     private async void Main(string operacao, object sender, EventArgs e)
     {
-        if (!GetAndCheckControls())
-        {
-            await DisplayAlert("Erro", "Dados insuficientes para processar o ficheiro SAFT ou o ficheiro não existe no caminho especificado.", "OK");
-            return;
-        }
-        else if (!ValidarNIF())
-        {
+        if (!GetAndCheckControls()) { return; }
+
+        else if (!ValidarNIF()) {
             await DisplayAlert("Erro", "NIF inválido", "OK");
             return;
         }
@@ -73,13 +68,11 @@ public partial class MainPage : ContentPage
         string jarPath = CriarJarTemp();
         string comando = null;
 
-        if (jarPath == null)
-        {
+        if (jarPath == null) {
             await DisplayAlert("Erro", "Ficheiro crítico à execução do programa não foi encontrado.", "OK");
             return;
         }
-        else
-        {
+        else {
             comando = SetComando(jarPath, "validar");
         }
 
@@ -210,6 +203,7 @@ public partial class MainPage : ContentPage
 		if (!File.Exists(FicheiroPath))
 		{
 			DisplayAlert("Erro", "O ficheiro não está presente no caminho seleccionado.", "OK");
+            return false;
 		}
 
         NIF = EntryNIF.Text;
@@ -221,7 +215,10 @@ public partial class MainPage : ContentPage
 			Password == null ||
 			Ano == null ||
 			Mes == null)
-        { return false; }
+        { 
+            DisplayAlert("Erro", "Dados insuficientes para processar o ficheiro SAFT. Por favor verifique se existem campos em branco.", "OK");
+            return false;
+        }
 
 		return true;
     }
@@ -273,19 +270,19 @@ public partial class MainPage : ContentPage
         StreamReader outputReader = processo.StandardOutput;
 
         // Abrir uma Task (declarada globalmente) para ler output stream e fazer update ao controlo na MainPage
-        leituraTask = Task.Run(async() =>
-        {
-            while (!outputReader.EndOfStream)
-            {
-                // Ler linha
-                var linha = await outputReader.ReadLineAsync();
+        //leituraTask = Task.Run(async() =>
+        //{
+        //    while (!outputReader.EndOfStream)
+        //    {
+        //        // Ler linha
+        //        var linha = await outputReader.ReadLineAsync();
 
-                Device.BeginInvokeOnMainThread(() =>
-                {
+        //        //Device.BeginInvokeOnMainThread(() =>
+        //        //{
 
-                }
-            }
-        }
+        //        //}
+        //    }
+        //}
 
 
         processo.WaitForExit();
