@@ -16,146 +16,146 @@
         </DataTemplate>
     </ContentPage.Resources>
 
-    <ScrollView>
-        <Grid Margin="25,20,25,20">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="400" />
-                <ColumnDefinition Width="*" />
-            </Grid.ColumnDefinitions>
-            
-            <VerticalStackLayout
-                Spacing="25"
-                VerticalOptions="Center"
-                HorizontalOptions="Start"
-                Grid.Column="0">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="400" />
+            <ColumnDefinition Width="*" />
 
-                <Image
+        </Grid.ColumnDefinitions>
+
+        <VerticalStackLayout
+            Spacing="25"
+            VerticalOptions="Center"
+            HorizontalOptions="Start"
+            Grid.Column="0">
+
+            <Image
                     Source="ID_logo.png"
                     SemanticProperties.Description="Infodinâmica, Lda."
                     HeightRequest="50"
                     HorizontalOptions="Center" />
-                <Label
+            <Label
                     Text="Comunicação de ficheiros SAFT"
                     SemanticProperties.HeadingLevel="Level1"
                     FontSize="24"
                     HorizontalOptions="Center" />
 
-                <VerticalStackLayout
+            <VerticalStackLayout
                     Spacing="20"
                     Padding="0,0,0,25">
 
-                    <!-- NIF e Password -->
-                    <Grid
+                <!-- NIF e Password -->
+                <Grid
                         ColumnSpacing="20"
                         Padding="0"
                         HorizontalOptions="Center"
                         VerticalOptions="Center"
                         x:Name="GridEntry">
 
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width ="150" />
-                            <ColumnDefinition Width ="150" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
-                        
-                        <Label 
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width ="150" />
+                        <ColumnDefinition Width ="150" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <Label 
                             Grid.Column="0"
                             Grid.Row="0"
                             Text="NIF"
                             FontSize="16"
                             HorizontalOptions="Start"/>
-                        <Entry
+                    <Entry
                             Grid.Column="0"
                             Grid.Row="1"
                             x:Name="EntryNIF"
                             BackgroundColor="#Fcfafd"
                             HorizontalOptions="Fill" />
 
-                        <Label
+                    <Label
                             Grid.Column="1"
                             Grid.Row="0"
                             Text="Password"
                             FontSize="14" 
                             HorizontalOptions="Start"/>
-                        <Entry
+                    <Entry
                             Grid.Column="1"
                             Grid.Row="1"
                             x:Name="EntryPassword"
                             BackgroundColor="#Fcfafd"
                             IsPassword="True" 
                             HorizontalOptions="Fill"/>
-                    </Grid>
-                    <!-- Ano e Mês -->
-                    <Grid
+                </Grid>
+                <!-- Ano e Mês -->
+                <Grid
                         ColumnSpacing="20"
                         Padding="0"
                         HorizontalOptions="Center"
                         VerticalOptions="Center"
                         x:Name="GridAnoMes">
 
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width ="*" />
-                            <ColumnDefinition Width ="*" />
-                        </Grid.ColumnDefinitions>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="*" />
-                        </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width ="*" />
+                        <ColumnDefinition Width ="*" />
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
 
-                        <HorizontalStackLayout Grid.Column="0" Spacing="5">
-                            <Label
+                    <HorizontalStackLayout Grid.Column="0" Spacing="5">
+                        <Label
                                 Text="Ano:"
                                 FontSize="14"
                                 VerticalOptions="Center"
                                 HorizontalOptions="End"/>
-                            <Picker
+                        <Picker
                                 x:Name="PickerAnos"
                                 ItemsSource="{Binding AnosList}"
                                 BackgroundColor="#Fcfafd"
                                 HorizontalOptions="End"/>
-                        </HorizontalStackLayout>
-                        <HorizontalStackLayout Grid.Column="1" Spacing="5">
-                            <Label
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Grid.Column="1" Spacing="5">
+                        <Label
                                 Grid.Column="1"
                                 Text="Mês:"
                                 FontSize="14"
                                 VerticalOptions="Center"
                                 HorizontalOptions="Start" />
-                            <Picker
+                        <Picker
                                 Grid.Column="1"
                                 x:Name="PickerMeses"
                                 ItemsSource="{Binding MesesList}"
                                 BackgroundColor="#Fcfafd"
                                 HorizontalOptions="End"/>
-                        </HorizontalStackLayout>
+                    </HorizontalStackLayout>
 
-                    </Grid>
-                </VerticalStackLayout>
-            
-                <VerticalStackLayout Padding="-15" Spacing="10" >
-                    <Button 
+                </Grid>
+            </VerticalStackLayout>
+
+            <VerticalStackLayout Padding="-15" Spacing="10" >
+                <Button 
                         x:Name="BtnEscolherSAFT"
                         Text="Escolher ficheiro SAFT" 
                         Clicked="OnSelectFileClicked"
                         HorizontalOptions="Center" />
 
-                    <Label
+                <Label
                         x:Name="LabelNomeFicheiro"
                         VerticalOptions="Center" 
                         HorizontalOptions="Center" />
-                </VerticalStackLayout>
+            </VerticalStackLayout>
 
-                <HorizontalStackLayout Padding="0,20,0,0" Spacing="10" HorizontalOptions="Center" VerticalOptions="Center">
-                    <Button 
+            <HorizontalStackLayout Padding="0,20,0,0" Spacing="10" HorizontalOptions="Center" VerticalOptions="Center">
+                <Button 
                         x:Name="BtnSubmeterSAFT"
                         Text="Submeter"
                         Clicked="OnSelectSubmeterClicked"
                         VerticalOptions="Center"
                         HorizontalOptions="Center" />
 
-                    <Button 
+                <Button 
                         x:Name="BtnValidarSAFT"
                         Text="Validar"
                         Clicked="OnSelectValidarClicked"
@@ -164,10 +164,25 @@
                         VerticalOptions="Center"
                         HorizontalOptions="Center" />
 
-                </HorizontalStackLayout>
+            </HorizontalStackLayout>
+        </VerticalStackLayout>
+        <VerticalStackLayout        
+            Spacing="15"
+            VerticalOptions="Center"
+            HorizontalOptions="Start"
+            Grid.Column="1">
 
-            </VerticalStackLayout>
-        </Grid>
-    </ScrollView>
+            <Editor
+                x:Name="EditorCmdOutput"
+                Text=""
+                HeightRequest="450"
+                WidthRequest="400"
+                FontSize="10"
+                IsReadOnly="True"
+                >
+            </Editor>
+            <Button Text="Apagar" WidthRequest="80" HeightRequest="25"/>
 
+        </VerticalStackLayout>
+    </Grid>
 </ContentPage>

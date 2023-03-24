@@ -76,8 +76,7 @@ public partial class MainPage : ContentPage
             comando = SetComando(jarPath, "validar");
         }
 
-        // Neste caso não faz muito sentido receber Exit Codes porque os erros aparecem todos na linha de comandos por estarmos a correr um programa externo
-        // *** But the more you know *** :)
+        // Exit Codes
         int exitCode = await ExecutarComando(comando);
 
         string titulo;
@@ -87,10 +86,11 @@ public partial class MainPage : ContentPage
         string erro = String.Format("Erro {0} \n{1}"
             , exitCode.ToString()
             , erroDict[exitCode]);
-        DisplayAlert(titulo, erro, "OK");
+        await DisplayAlert(titulo, erro, "OK");
 
         return;
     }
+
 
     // *** Eventos ***
     void OnPickerAnosSelectedIndexChanged(object sender, EventArgs e)
@@ -102,19 +102,14 @@ public partial class MainPage : ContentPage
     private async void OnSelectFileClicked(object sender, EventArgs e)
 	{
 		var resultado = await FilePicker.PickAsync();
-
-
-		if (resultado != null) {
-			// Check se o ficheiro existe (pode ter sido eliminado ou movido após ser escolhido na app)
 			
+        if (resultado != null)
+        {
             FicheiroPath = resultado.FullPath;
             LabelNomeFicheiro.Text = resultado.FileName;
-
             PastaPath = Path.GetDirectoryName(FicheiroPath);
         }
-		else {
-            await DisplayAlert("Erro", "Caminho de ficheiro vazio. Seleccione um caminho válido.", "OK"); 
-			return; }
+		else { return; }
 	}
 
 	private async void OnSelectValidarClicked(object sender, EventArgs e)
@@ -126,8 +121,8 @@ public partial class MainPage : ContentPage
 	{
         Main("enviar", sender, e);
     }
-    // ***
     
+
     // *** Funções suporte ***
 	private bool ValidarNIF() //https://pt.wikipedia.org/wiki/N%C3%BAmero_de_identifica%C3%A7%C3%A3o_fiscal
     {
@@ -219,7 +214,6 @@ public partial class MainPage : ContentPage
             DisplayAlert("Erro", "Dados insuficientes para processar o ficheiro SAFT. Por favor verifique se existem campos em branco.", "OK");
             return false;
         }
-
 		return true;
     }
 
@@ -250,7 +244,7 @@ public partial class MainPage : ContentPage
             Arguments = "/C " + comando,
             UseShellExecute = false,
             CreateNoWindow = true,
-            RedirectStandardInput = true
+            RedirectStandardOutput = true
         };
 
         // Iniciar o processo
@@ -267,27 +261,34 @@ public partial class MainPage : ContentPage
          * ou seja, bloqueia o UI enquanto lê as linhas. No entanto isso não é boa prática por isso iremos usar um StreamReader e uma Task
          * permitindo utilização do programa enquanto o SAFT é processado.
          */
+
+        // Inicializar Reader
         StreamReader outputReader = processo.StandardOutput;
 
-        // Abrir uma Task (declarada globalmente) para ler output stream e fazer update ao controlo na MainPage
-        //leituraTask = Task.Run(async() =>
-        //{
-        //    while (!outputReader.EndOfStream)
-        //    {
-        //        // Ler linha
-        //        var linha = await outputReader.ReadLineAsync();
+        // Método que faz update ao Editor com output
+        async void UpdateEditor(string texto)
+        {
+            // InvokeOnMainThreadAsync faz update ao UI (main thread) a partir de um thread secundário
+            await Device.InvokeOnMainThreadAsync(() =>
+            {
+                EditorCmdOutput.Text += texto;
+            });
+        }
 
-        //        //Device.BeginInvokeOnMainThread(() =>
-        //        //{
+        // Task de leitura do output e update do editor
+        var leituraTask = Task.Run(async () =>
+        {
+            while (!outputReader.EndOfStream)
+            {
+                // Get linha
+                var linha = await outputReader.ReadLineAsync();
 
-        //        //}
-        //    }
-        //}
-
+                // Update Editor com linha
+                UpdateEditor(linha + Environment.NewLine);
+            }
+        });
 
         processo.WaitForExit();
-
 		return taskCompSource.Task;
     }
-    // ***
 }

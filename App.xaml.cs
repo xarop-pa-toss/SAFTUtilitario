@@ -7,7 +7,7 @@ public partial class App : Application
 		InitializeComponent();
 
 		Application.Current.UserAppTheme = AppTheme.Light;
-		MainPage = new AppShell();
+		MainPage = new MainPage();
 	}
 
     protected override Window CreateWindow(IActivationState activationState)
@@ -16,22 +16,23 @@ public partial class App : Application
 
         // *** KNOWN MAUI BUG *** DOES NOT WORK ***
         // Get largura e altura do display (tendo em conta resolução e percentagem de "zoom")
-        //var display = DeviceDisplay.Current.MainDisplayInfo;
-        //var alturaMonitor = display.Height;
-        //var larguraMonitor = display.Width;
+        // var display = DeviceDisplay.Current.MainDisplayInfo;
+        // var alturaMonitor = display.Height;
+        // var larguraMonitor = display.Width;
 
-        //const int altura = 600;
-        //const int largura = 400;
+        const int altura = 600;
+        const int largura = 875;
 
         // Set dimensões para a aplicação
-        //janela.MinimumHeight = altura;
-        //janela.MaximumHeight = altura;
-        //janela.MinimumWidth = largura;
+        janela.MinimumHeight = altura;
+        janela.MaximumHeight = altura;
+        janela.MinimumWidth = largura;
+        janela.MaximumWidth = largura;
 
         // Set tamanho da janela da app (deve ser double)
-        //janela.Height = altura;
-        //janela.Width = largura;
+        janela.Height = altura;
+        janela.Width = largura;
 
-        return janela;	
+        return janela;
     }
 }
