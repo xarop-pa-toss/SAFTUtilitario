@@ -6,6 +6,7 @@ using System.IO;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Text;
 
 namespace SAFTUtilitario;
 
@@ -76,17 +77,17 @@ public partial class MainPage : ContentPage
             comando = SetComando(jarPath, "validar");
         }
 
+        await ExecutarComando(comando);
         // Exit Codes
-        int exitCode = await ExecutarComando(comando);
 
-        string titulo;
-        if (exitCode == 0) { titulo = "Sucesso"; }
-        else { titulo = "Erro"; }
+        //string titulo;
+        //if (exitCode == 0) { titulo = "Sucesso"; }
+        //else { titulo = "Erro"; }
 
-        string erro = String.Format("Erro {0} \n{1}"
-            , exitCode.ToString()
-            , erroDict[exitCode]);
-        await DisplayAlert(titulo, erro, "OK");
+        //string erro = String.Format("Erro {0} \n{1}"
+        //    , exitCode.ToString()
+        //    , erroDict[exitCode]);
+        //await DisplayAlert(titulo, erro, "OK");
 
         return;
     }
@@ -111,6 +112,11 @@ public partial class MainPage : ContentPage
         }
 		else { return; }
 	}
+
+    private void OnBtnApagarClicked(object sender, EventArgs e)
+    {
+        EditorCmdOutput.Text = "";
+    }
 
 	private async void OnSelectValidarClicked(object sender, EventArgs e)
 	{
@@ -232,11 +238,8 @@ public partial class MainPage : ContentPage
 		return comando; 
     }
 
-	private Task<int> ExecutarComando (string comando)
-	{
-        // Agarra o exit code
-        var taskCompSource = new TaskCompletionSource<int>();
-        
+	private async Task ExecutarComando (string comando)
+	{        
         // Configurações a utilizar pelo processo cmd.exe
         ProcessStartInfo processoStartInfo = new ProcessStartInfo
         {
@@ -244,7 +247,8 @@ public partial class MainPage : ContentPage
             Arguments = "/C " + comando,
             UseShellExecute = false,
             CreateNoWindow = true,
-            RedirectStandardOutput = true
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
         };
 
         // Iniciar o processo
@@ -253,17 +257,44 @@ public partial class MainPage : ContentPage
             EnableRaisingEvents = true,
             StartInfo = processoStartInfo
         };
-		processo.Exited += (s, e) => taskCompSource.SetResult(processo.ExitCode);
-        processo.Start();
-
+        
         /*
-         * É esperado que o processo termine em pouco tempo, por isso faz algum sentido usar processo.StandardOutput.ReadToEnd() que não é assincrono
-         * ou seja, bloqueia o UI enquanto lê as linhas. No entanto isso não é boa prática por isso iremos usar um StreamReader e uma Task
-         * permitindo utilização do programa enquanto o SAFT é processado.
+         * É esperado que o processo termine em pouco tempo, por isso faz algum sentido usar processo não assincrono,
+         * ou seja, que bloqueia o UI enquanto lê as linhas. 
+         * No entanto isso não é boa prática por tentámos usar um StreamReader e uma Task permitindo utilização do programa enquanto o SAFT é processado.
+         * Infelizmente o .jar, quando dá erro, processa tudo isso de uma vez só e não aparecia no Output.
+         * Por isso usamos um StringBuilder; deixamos o cmd.exe correr até ao fim e apanhamos o output de uma vez só.
          */
 
-        // Inicializar Reader
-        StreamReader outputReader = processo.StandardOutput;
+        // Inicializar builder
+        StringBuilder outputString = new StringBuilder();
+
+        // Configurar o output redirect para stdout e errout
+        processo.OutputDataReceived += (s, e) =>
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                outputString.AppendLine(e.Data);
+            }
+        };
+
+        processo.ErrorDataReceived += (s, e) =>
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                outputString.AppendLine(e.Data);
+            }
+        };
+
+        processo.Start();
+        processo.BeginOutputReadLine();
+        processo.BeginErrorReadLine();
+        await processo.WaitForExitAsync();
+        processo.Close();
+
+        UpdateEditor(outputString.ToString());
+        EditorCmdOutput.Text += Environment.NewLine;
+
 
         // Método que faz update ao Editor com output
         async void UpdateEditor(string texto)
@@ -274,21 +305,6 @@ public partial class MainPage : ContentPage
                 EditorCmdOutput.Text += texto;
             });
         }
-
-        // Task de leitura do output e update do editor
-        var leituraTask = Task.Run(async () =>
-        {
-            while (!outputReader.EndOfStream)
-            {
-                // Get linha
-                var linha = await outputReader.ReadLineAsync();
-
-                // Update Editor com linha
-                UpdateEditor(linha + Environment.NewLine);
-            }
-        });
-
-        processo.WaitForExit();
-		return taskCompSource.Task;
+        return;
     }
 }

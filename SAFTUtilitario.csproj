@@ -52,6 +52,11 @@
 	<ItemGroup>
 	  <None Remove="Resources\Images\ID_logo.png" />
 	  <None Remove="Resources\Raw\saftBinaries.jar" />
+	  <None Remove="Resources\saft.jar" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Resources\saft.jar" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -67,10 +72,6 @@
 
 	<ItemGroup>
 	  <Folder Include="ViewModels\" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <EmbeddedResource Include="Resources\saftBinaries.jar" />
 	</ItemGroup>
 
 </Project>

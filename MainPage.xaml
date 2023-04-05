@@ -178,10 +178,14 @@
                 HeightRequest="450"
                 WidthRequest="400"
                 FontSize="10"
-                IsReadOnly="True"
-                >
+                IsReadOnly="True">
             </Editor>
-            <Button Text="Apagar" WidthRequest="80" HeightRequest="25"/>
+            <Button 
+                x:Name="BtnApagar"
+                Text="Apagar"
+                Clicked="OnBtnApagarClicked"
+                WidthRequest="80"
+                HeightRequest="25"/>
 
         </VerticalStackLayout>
     </Grid>
