@@ -12,14 +12,13 @@ namespace SAFTUtilitario;
 
 public partial class MainPage : ContentPage
 {
-    private protected string pickerFullPath { get; set; }
+    private protected string pickerPath { get; set; }
     private protected string pickerPasta { get; set; }
     private protected string pickerNome { get; set; }
-    private protected string execPasta { get; set; }
-    private protected string jarFullPath { get; set; }
-	private protected string saftFullPath { get; set; }
+    private protected string exePath { get; set; }
+    private protected string jarPath { get; set; }
+	private protected string saftPath { get; set; }
     private protected string saftPasta { get; set; }
-    private protected string saftNome { get; set; }
     private protected string NIF { get; set; }
 	private protected string Password { get; set; }
 	private protected string Ano { get; set; }
@@ -71,7 +70,7 @@ public partial class MainPage : ContentPage
         PermissionStatus statuswrite = await Permissions.RequestAsync<Permissions.StorageWrite>();
 
         // Get root do programa (para ter acesso a Resources)
-        execPasta = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        exePath = AppDomain.CurrentDomain.BaseDirectory;
 
         if (!GetAndCheckControls()) { return; }
 
@@ -81,7 +80,7 @@ public partial class MainPage : ContentPage
         }
 
         // Get .jar a executar ( pesquisar sobre "Build Action MauiAsset" usado para update de ficheiros após release)
-        string jarPath = GetJar();
+        jarPath = GetJar();
         // Copiar ficheiro SAFT para os Resources da app e faz update às variaveis globais de Path e Pasta da localização do ficheiro
         CopiarFicheiroSAFT();
 
@@ -102,15 +101,14 @@ public partial class MainPage : ContentPage
 
     private string SetComando(string jarPath, string operacao)
     {
-        string comando = "java -jar " + jarPath
+        string comando = "java -jar \"" + jarPath + "\""
             + " -n " + NIF
             + " -p " + Password
             + " -a " + Ano
             + " -m " + Mes
             + " -op " + operacao
-            + " -i " + saftFullPath
-            + " -o " + saftPasta
-            + " && pause";
+            + " -i \"" + saftPath + "\""
+            + " -o \"" + saftPasta + "\"";
 
         return comando;
     }
@@ -164,6 +162,8 @@ public partial class MainPage : ContentPage
             }
         };
 
+        // Check se ficheiro SAFT está em uso por outro processo
+
         processo.Start();
         processo.BeginOutputReadLine();
         processo.BeginErrorReadLine();
@@ -200,9 +200,9 @@ public partial class MainPage : ContentPage
 			
         if (resultado != null)
         {
-            pickerFullPath = resultado.FullPath;
+            pickerPath = resultado.FullPath;
             pickerNome = resultado.FileName;
-            pickerPasta = Path.GetDirectoryName(saftFullPath);
+            pickerPasta = Path.GetDirectoryName(saftPath);
 
             LabelNomeFicheiro.Text = pickerNome;
             
@@ -267,35 +267,36 @@ public partial class MainPage : ContentPage
 		// Get lista de recursos do projecto e encontra o path do ficheiro .jar que queremos executar
 		string[] recursos = assembly.GetManifestResourceNames();
 
-		// Get nome do ficheiro .jar nos recursos
-		foreach (string x in recursos) {
-            if (x.EndsWith(".jar"))
-            {
-                return x;
-            }
-            else { return null;
-            } 
-		}
-        return null;
+        // Get nome do ficheiro .jar nos recursos
+        string jarNomeRecurso = recursos.FirstOrDefault(x => x.EndsWith(".jar")); // Isto retorna algo como "SAFTUtilitario.Resources.saft.jar". Tem de ser tratado
+
+        if (jarNomeRecurso != null)
+        {
+            string[] separado = jarNomeRecurso.Split('.');
+            jarNomeRecurso = separado[separado.Length - 2] + "." + separado[separado.Length - 1];
+
+            return Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Resources", jarNomeRecurso);
+        }
+        else return null;
 	}
     
     private void CopiarFicheiroSAFT()
     {
-        saftPasta = Path.Combine(execPasta, "Resources", "SAFT");
+        saftPasta = Path.Combine(exePath, "Resources", "SAFT");
 
         if (!Directory.Exists(saftPasta))
         {
             Directory.CreateDirectory(saftPasta);
         }
 
-        saftFullPath = Path.Combine(saftPasta, pickerNome);
+        saftPath = Path.Combine(saftPasta, pickerNome);
 
-        File.Copy(pickerFullPath, saftFullPath, true);
+        File.Copy(pickerPath, saftPath, true);
     }
 
     private bool GetAndCheckControls()
 	{
-		if (!File.Exists(pickerFullPath))
+		if (!File.Exists(pickerPath))
 		{
 			DisplayAlert("Erro", "O ficheiro não está presente no caminho seleccionado.", "OK");
             return false;
