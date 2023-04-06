@@ -108,7 +108,8 @@ public partial class MainPage : ContentPage
             + " -m " + Mes
             + " -op " + operacao
             + " -i \"" + saftPath + "\""
-            + " -o \"" + saftPasta + "\"";
+            + " -o \"" + saftPasta + "\""
+;
 
         return comando;
     }
