@@ -12,9 +12,15 @@ namespace SAFTUtilitario;
 
 public partial class MainPage : ContentPage
 {
-	private protected string FicheiroPath { get; set; }
-	private protected string PastaPath { get; set; }
-	private protected string NIF { get; set; }
+    private protected string pickerFullPath { get; set; }
+    private protected string pickerPasta { get; set; }
+    private protected string pickerNome { get; set; }
+    private protected string execPasta { get; set; }
+    private protected string jarFullPath { get; set; }
+	private protected string saftFullPath { get; set; }
+    private protected string saftPasta { get; set; }
+    private protected string saftNome { get; set; }
+    private protected string NIF { get; set; }
 	private protected string Password { get; set; }
 	private protected string Ano { get; set; }
 	private protected string Mes { get; set; }
@@ -56,9 +62,17 @@ public partial class MainPage : ContentPage
         erroDict.Add(221225495, "Não foi possivel abrir o ficheiro .jar. É possivel que o utilizador não tenha permissões neste computador.");
     }
 
+
     // MAIN
     private async void Main(string operacao, object sender, EventArgs e)
     {
+        // Get permissões admin
+        PermissionStatus statusread = await Permissions.RequestAsync<Permissions.StorageRead>();
+        PermissionStatus statuswrite = await Permissions.RequestAsync<Permissions.StorageWrite>();
+
+        // Get root do programa (para ter acesso a Resources)
+        execPasta = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+
         if (!GetAndCheckControls()) { return; }
 
         else if (!ValidarNIF()) {
@@ -66,7 +80,11 @@ public partial class MainPage : ContentPage
             return;
         }
 
-        string jarPath = CriarJarTemp();
+        // Get .jar a executar ( pesquisar sobre "Build Action MauiAsset" usado para update de ficheiros após release)
+        string jarPath = GetJar();
+        // Copiar ficheiro SAFT para os Resources da app e faz update às variaveis globais de Path e Pasta da localização do ficheiro
+        CopiarFicheiroSAFT();
+
         string comando = null;
 
         if (jarPath == null) {
@@ -74,21 +92,97 @@ public partial class MainPage : ContentPage
             return;
         }
         else {
-            comando = SetComando(jarPath, "validar");
+           comando = SetComando(jarPath, "validar");
         }
 
         await ExecutarComando(comando);
-        // Exit Codes
 
-        //string titulo;
-        //if (exitCode == 0) { titulo = "Sucesso"; }
-        //else { titulo = "Erro"; }
+        return;
+    }
 
-        //string erro = String.Format("Erro {0} \n{1}"
-        //    , exitCode.ToString()
-        //    , erroDict[exitCode]);
-        //await DisplayAlert(titulo, erro, "OK");
+    private string SetComando(string jarPath, string operacao)
+    {
+        string comando = "java -jar " + jarPath
+            + " -n " + NIF
+            + " -p " + Password
+            + " -a " + Ano
+            + " -m " + Mes
+            + " -op " + operacao
+            + " -i " + saftFullPath
+            + " -o " + saftPasta
+            + " && pause";
 
+        return comando;
+    }
+
+    private async Task ExecutarComando(string comando)
+    {
+        // Configurações a utilizar pelo processo cmd.exe
+        ProcessStartInfo processoStartInfo = new ProcessStartInfo
+        {
+            FileName = "cmd.exe",
+            Arguments = "/c " + comando,
+            UseShellExecute = false,
+            CreateNoWindow = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            Verb = "runas" // run as (admin rights por causa do /c)
+        };
+
+        // Iniciar o processo
+        Process processo = new Process
+        {
+            EnableRaisingEvents = true,
+            StartInfo = processoStartInfo
+        };
+
+        /*
+         * É esperado que o processo termine em pouco tempo, por isso faz algum sentido usar processo não assincrono,
+         * ou seja, que bloqueia o UI enquanto lê as linhas. 
+         * No entanto isso não é boa prática por tentámos usar um StreamReader e uma Task permitindo utilização do programa enquanto o SAFT é processado.
+         * Infelizmente o .jar, quando dá erro, processa tudo isso de uma vez só e não aparecia no Output.
+         * Por isso usamos um StringBuilder; deixamos o cmd.exe correr até ao fim e apanhamos o output de uma vez só.
+         */
+
+        // Inicializar builder
+        StringBuilder outputString = new StringBuilder();
+
+        // Configurar o output redirect para stdout e errout
+        processo.OutputDataReceived += (s, e) =>
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                outputString.AppendLine(e.Data);
+            }
+        };
+
+        processo.ErrorDataReceived += (s, e) =>
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                outputString.AppendLine(e.Data);
+            }
+        };
+
+        processo.Start();
+        processo.BeginOutputReadLine();
+        processo.BeginErrorReadLine();
+        await processo.WaitForExitAsync();
+        processo.Close();
+
+        UpdateEditor(outputString.ToString());
+        EditorCmdOutput.Text += Environment.NewLine;
+
+
+        // Método que faz update ao Editor com output
+        async void UpdateEditor(string texto)
+        {
+            // InvokeOnMainThreadAsync faz update ao UI (main thread) a partir de um thread secundário
+            await Device.InvokeOnMainThreadAsync(() =>
+            {
+                EditorCmdOutput.Text += texto;
+            });
+        }
         return;
     }
 
@@ -106,9 +200,12 @@ public partial class MainPage : ContentPage
 			
         if (resultado != null)
         {
-            FicheiroPath = resultado.FullPath;
-            LabelNomeFicheiro.Text = resultado.FileName;
-            PastaPath = Path.GetDirectoryName(FicheiroPath);
+            pickerFullPath = resultado.FullPath;
+            pickerNome = resultado.FileName;
+            pickerPasta = Path.GetDirectoryName(saftFullPath);
+
+            LabelNomeFicheiro.Text = saftNome;
+            
         }
 		else { return; }
 	}
@@ -162,46 +259,37 @@ public partial class MainPage : ContentPage
             .ToList();
     }
 
-    private string CriarJarTemp()
-	{
+    private string GetJar()
+    {
 		// Get assembly com recursos (Resources) do projecto
 		Assembly assembly = typeof(MainPage).GetTypeInfo().Assembly;
 
 		// Get lista de recursos do projecto e encontra o path do ficheiro .jar que queremos executar
 		string[] recursos = assembly.GetManifestResourceNames();
-		string nome = null;
 
 		// Get nome do ficheiro .jar nos recursos
 		foreach (string x in recursos) {
-			if (x.EndsWith(".jar")) {
-				nome = x; break; 
-			}
-		}
-
-		// *** Se encontrar um ficheiro .jar, get full path. ***
-		if (nome != null) {
-			// Get stream para o recurso
-			using (Stream resourceStream = assembly.GetManifestResourceStream(nome))
-			{
-                // Cria ficheiro temporário (em pasta temp) para os conteudos do recurso.
-                string tempPath = Path.Combine(Path.GetTempPath(), nome);
-
-				using (FileStream fileStream = new FileStream(tempPath, FileMode.Create, FileAccess.Write))
-				{
-                    // Copia recurso para ficheiro temporário
-                    resourceStream.CopyTo(fileStream);
-                    // Return path do ficheiro temporário
-                    return fileStream.Name;
-                }
+            if (x.EndsWith(".jar"))
+            {
+                return x;
             }
-        }
-		else { return null; }
-		// ***
+            else { return null;
+            } 
+		}
+        return null;
 	}
+    
+    private void CopiarFicheiroSAFT()
+    {
+        saftPasta = Path.Combine("Resources", "SAFT");
+        saftFullPath = Path.Combine(saftPasta, pickerNome);
+
+        File.Copy(pickerFullPath, pickerFullPath, true);
+    }
 
     private bool GetAndCheckControls()
 	{
-		if (!File.Exists(FicheiroPath))
+		if (!File.Exists(saftFullPath))
 		{
 			DisplayAlert("Erro", "O ficheiro não está presente no caminho seleccionado.", "OK");
             return false;
@@ -223,88 +311,6 @@ public partial class MainPage : ContentPage
 		return true;
     }
 
-	private string SetComando (string jarPath, string operacao)
-	{
-		string comando = "java -jar " + jarPath
-            + " -n " + NIF
-            + " -p " + Password
-            + " -a " + Ano
-            + " -m " + Mes
-            + " -op " + operacao
-            + " -i " + FicheiroPath
-			+ " -o " + PastaPath
-			+ " && pause";
-
-		return comando; 
-    }
-
-	private async Task ExecutarComando (string comando)
-	{        
-        // Configurações a utilizar pelo processo cmd.exe
-        ProcessStartInfo processoStartInfo = new ProcessStartInfo
-        {
-            FileName = "cmd.exe",
-            Arguments = "/C " + comando,
-            UseShellExecute = false,
-            CreateNoWindow = true,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true
-        };
-
-        // Iniciar o processo
-        Process processo = new Process
-        {
-            EnableRaisingEvents = true,
-            StartInfo = processoStartInfo
-        };
-        
-        /*
-         * É esperado que o processo termine em pouco tempo, por isso faz algum sentido usar processo não assincrono,
-         * ou seja, que bloqueia o UI enquanto lê as linhas. 
-         * No entanto isso não é boa prática por tentámos usar um StreamReader e uma Task permitindo utilização do programa enquanto o SAFT é processado.
-         * Infelizmente o .jar, quando dá erro, processa tudo isso de uma vez só e não aparecia no Output.
-         * Por isso usamos um StringBuilder; deixamos o cmd.exe correr até ao fim e apanhamos o output de uma vez só.
-         */
-
-        // Inicializar builder
-        StringBuilder outputString = new StringBuilder();
-
-        // Configurar o output redirect para stdout e errout
-        processo.OutputDataReceived += (s, e) =>
-        {
-            if (!string.IsNullOrEmpty(e.Data))
-            {
-                outputString.AppendLine(e.Data);
-            }
-        };
-
-        processo.ErrorDataReceived += (s, e) =>
-        {
-            if (!string.IsNullOrEmpty(e.Data))
-            {
-                outputString.AppendLine(e.Data);
-            }
-        };
-
-        processo.Start();
-        processo.BeginOutputReadLine();
-        processo.BeginErrorReadLine();
-        await processo.WaitForExitAsync();
-        processo.Close();
-
-        UpdateEditor(outputString.ToString());
-        EditorCmdOutput.Text += Environment.NewLine;
 
 
-        // Método que faz update ao Editor com output
-        async void UpdateEditor(string texto)
-        {
-            // InvokeOnMainThreadAsync faz update ao UI (main thread) a partir de um thread secundário
-            await Device.InvokeOnMainThreadAsync(() =>
-            {
-                EditorCmdOutput.Text += texto;
-            });
-        }
-        return;
-    }
 }

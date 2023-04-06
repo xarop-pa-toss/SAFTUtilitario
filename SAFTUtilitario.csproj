@@ -29,6 +29,15 @@
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'tizen'">6.5</SupportedOSPlatformVersion>
 		<DefaultLanguage>PT</DefaultLanguage>
+		<GenerateAppInstallerFile>True</GenerateAppInstallerFile>
+		<AppxPackageSigningEnabled>True</AppxPackageSigningEnabled>
+		<PackageCertificateThumbprint>5AD30211B17824DDA5C42957ADE3153752479BF4</PackageCertificateThumbprint>
+		<AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+		<AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+		<AppxSymbolPackageEnabled>False</AppxSymbolPackageEnabled>
+		<GenerateTestArtifacts>True</GenerateTestArtifacts>
+		<AppInstallerUri>\\nas\ToolBox\SAFTUtilitario_Deployment</AppInstallerUri>
+		<HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -52,7 +61,6 @@
 	<ItemGroup>
 	  <None Remove="Resources\Images\ID_logo.png" />
 	  <None Remove="Resources\Raw\saftBinaries.jar" />
-	  <None Remove="Resources\saft.jar" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -71,6 +79,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="Resources\SAFT\" />
 	  <Folder Include="ViewModels\" />
 	</ItemGroup>
 
