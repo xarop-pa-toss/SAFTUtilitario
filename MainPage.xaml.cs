@@ -204,7 +204,7 @@ public partial class MainPage : ContentPage
             pickerNome = resultado.FileName;
             pickerPasta = Path.GetDirectoryName(saftFullPath);
 
-            LabelNomeFicheiro.Text = saftNome;
+            LabelNomeFicheiro.Text = pickerNome;
             
         }
 		else { return; }
@@ -227,7 +227,7 @@ public partial class MainPage : ContentPage
     
 
     // *** Funções suporte ***
-	private bool ValidarNIF() //https://pt.wikipedia.org/wiki/N%C3%BAmero_de_identifica%C3%A7%C3%A3o_fiscal
+	private bool ValidarNIF() //https://pt.wikipedia.org/wikioN%C3%BAmero_de_identifica%C3%A7%C3%A3o_fiscal
     {
         int tamanhoNumero = 9; // Tamanho do número NIF
 
@@ -281,15 +281,21 @@ public partial class MainPage : ContentPage
     
     private void CopiarFicheiroSAFT()
     {
-        saftPasta = Path.Combine("Resources", "SAFT");
+        saftPasta = Path.Combine(execPasta, "Resources", "SAFT");
+
+        if (!Directory.Exists(saftPasta))
+        {
+            Directory.CreateDirectory(saftPasta);
+        }
+
         saftFullPath = Path.Combine(saftPasta, pickerNome);
 
-        File.Copy(pickerFullPath, pickerFullPath, true);
+        File.Copy(pickerFullPath, saftFullPath, true);
     }
 
     private bool GetAndCheckControls()
 	{
-		if (!File.Exists(saftFullPath))
+		if (!File.Exists(pickerFullPath))
 		{
 			DisplayAlert("Erro", "O ficheiro não está presente no caminho seleccionado.", "OK");
             return false;
