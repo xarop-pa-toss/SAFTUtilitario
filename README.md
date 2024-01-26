@@ -8,6 +8,7 @@ Este projecto está protegido pela licença **CC BY-NC** que, apesar de permitir
 
 <br>
 <br>
+
 # SAFTUtility
 ## 📝 Processing of SAFT files above 40MB 📝
 .NET MAUI project to facilitate the validation and submission of SAFT files to the Tax Authority (AT). It utilizes MAUI to provide a simple window that accepts the necessary parameters for SAFT submission (NIF, month, year, and AT user data) and uses them as input for the .jar file provided by the AT for submitting SAFT files above 40MB.
